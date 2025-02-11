@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Qlik Sense Dashboard</title>
+</head>
+<body>
+    <h2>Interactive Qlik Sense Dashboard</h2>
+    <p>This is my data visualization of book consumption across Romanian counties.</p>
+
+    <iframe src="http://localhost:4848/single/?appid=C%3A%5CUsers%5CIrinel.DESKTOP-RLS3LMP%5CDocuments%5CQlik%5CSense%5CApps%5CMap%20of%20Romania%20in%20Books%20Read%202024.qvf&obj=WgyVem&theme=Themepark%20-%20Power%20BI&opt=ctxmenu,currsel"
+            style="border:none;width:100%;height:600px;"></iframe>
+
+    <p>If the dashboard does not load, ensure that Qlik Sense is running on your local machine.</p>
+</body>
+</html>
