@@ -1,0 +1,72 @@
+TempStats1:
+LOAD 
+    Fractile([Books per Capita], 0.75) AS BooksPerCapitaQ75,
+    Fractile([Average Order Value in RON], 0.75) AS AvgOrderValueQ75,
+    Fractile([Total Orders Placed by the Most Loyal Customer], 0.25) AS LoyaltyQ25
+FROM [lib://books_read/Map of Romania in Books Read 2024.xlsx] (ooxml, embedded labels, table is [Books Read 2024]);
+
+// Extract the values into variables
+LET vBooksPerCapitaQ75 = Peek('BooksPerCapitaQ75', 0, 'TempStats');
+LET vAvgOrderValueQ75 = Peek('AvgOrderValueQ75', 0, 'TempStats');
+LET vLoyaltyQ25 = Peek('LoyaltyQ25', 0, 'TempStats');
+
+// Drop temp table to avoid duplication
+DROP TABLE TempStats1;
+
+TempStats2:
+LOAD 
+    Avg([Books per Capita]) AS AvgBooksPerCapita,
+    Avg([Average Order Value in RON]) AS AvgOrderValue
+FROM [lib://books_read/Map of Romania in Books Read 2024.xlsx] (ooxml, embedded labels, table is [Books Read 2024]);
+
+// Store the values in variables
+LET vAvgBooksPerCapita = Peek('AvgBooksPerCapita', 0, 'TempStats');
+LET vAvgOrderValue = Peek('AvgOrderValue', 0, 'TempStats');
+
+// Drop the temporary table after extracting the values
+DROP TABLE TempStats2;
+
+
+BooksData:
+LOAD 
+    County,
+    [Total Products Sold] AS TotalProductsSold,
+    [Total Orders Placed by the Most Loyal Customer] AS Loyalty,
+    [Average Order Value in RON] AS AvgOrderValue,
+    [Books per Capita] AS BooksPerCapita,
+    Population,
+    [County Code] AS CountyCode,
+
+    // Assign Reading Personality
+    IF(
+        [Books per Capita] >= $(vBooksPerCapitaQ75) AND [Average Order Value in RON] >= $(vAvgOrderValueQ75),
+        '📚 The Scholars',
+
+        IF(
+            [Average Order Value in RON] >= $(vAvgOrderValueQ75) AND [Total Orders Placed by the Most Loyal Customer] <= $(vLoyaltyQ25),
+            '💳 The Impulse Buyers',
+
+            '📖 The Casual Readers'
+        )
+    ) AS [Reading Personality],
+
+	// Define the Quadrants Using an IF Statement
+	IF(
+    [Books per Capita] >= $(vAvgBooksPerCapita) AND [Average Order Value in RON] < $(vAvgOrderValue),
+    '📓 Cheap books, high books per capita',
+
+    IF(
+        [Books per Capita] < $(vAvgBooksPerCapita) AND [Average Order Value in RON] < $(vAvgOrderValue),
+        '📘 Cheap books, low books per capita',
+
+        IF(
+            [Books per Capita] < $(vAvgBooksPerCapita) AND [Average Order Value in RON] >= $(vAvgOrderValue),
+            '💰 Expensive books, low books per capita',
+
+            '🤓 Expensive books, high books per capita'
+        )
+    )
+	) AS [Book Pricing Quadrant]
+
+
+FROM [lib://books_read/Map of Romania in Books Read 2024.xlsx] (ooxml, embedded labels, table is [Books Read 2024]);
